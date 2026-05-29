@@ -49,11 +49,11 @@ export const Gifts: React.FC<{ onExploreClick?: (type: 'gifts' | 'cakes' | 'tour
               className="relative flex flex-col items-center md:items-start group overflow-hidden"
             >
               {/* Main Illustration */}
-              <div className="h-96 w-full mb-2 flex items-center justify-center relative z-10">
+              <div className="h-96 w-full mb-2 flex items-center justify-center relative z-10 rounded-t-[60px] overflow-hidden">
                 <img 
                   src={card.image} 
                   alt={card.title} 
-                  className="h-full w-auto object-contain mix-blend-multiply rounded-3xl" 
+                  className="w-full h-full object-cover mix-blend-multiply" 
                 />
               </div>
 
