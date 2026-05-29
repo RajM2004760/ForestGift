@@ -6,21 +6,21 @@ const giftCards = [
     title: "Gifts", 
     label: "EXPLORE GIFTS", 
     link: "/gifts", 
-    video: "/gift box animation.mp4",
+    image: "/forestgifts/gift_box.png",
     description: "When someone chooses to plant a tree with us on their birthday, they are not just celebrating themselves; they're nurturing life. They're helping the planet breathe better, creating homes for birds, balancing the ecosystem, and spreading hope."
   },
   { 
     title: "Cakes", 
     label: "EXPLORE CAKES", 
     link: "/cakes", 
-    video: "/cake animation.mp4",
+    image: "/forestgifts/gift_cake.png",
     description: "we remember your birthday — always. Even if you forget to plant a tree, we'll still celebrate you with a green surprise, a heartfelt message, and a little piece of nature's love. Because your existence itself is worth celebrating and the Earth is grateful for you."
   },
   { 
     title: "Tours", 
     label: "EXPLORE TOURS", 
     link: "/tours", 
-    video: "/bus animation.mp4",
+    image: "/forestgifts/gift_tour.png",
     description: "At Forest, we believe every birthday should make the world a little greener. We celebrate people by planting trees, sending eco-friendly gifts, cakes, and greetings — turning every birthday into a celebration of life and the planet."
   }
 ];
@@ -50,13 +50,10 @@ export const Gifts: React.FC<{ onExploreClick?: (type: 'gifts' | 'cakes' | 'tour
             >
               {/* Main Illustration */}
               <div className="h-96 w-full mb-2 flex items-center justify-center relative z-10">
-                <video 
-                  src={card.video} 
-                  autoPlay 
-                  loop 
-                  muted 
-                  playsInline
-                  className="h-full w-auto object-contain" 
+                <img 
+                  src={card.image} 
+                  alt={card.title} 
+                  className="h-full w-auto object-contain mix-blend-multiply rounded-3xl" 
                 />
               </div>
 

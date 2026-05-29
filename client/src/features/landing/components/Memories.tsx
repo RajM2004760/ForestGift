@@ -30,9 +30,9 @@ export const Memories: React.FC = () => {
           className="w-full max-w-[1400px] mt-0 -translate-y-8"
         >
           <img 
-            src="https://assets.zyrosite.com/AE0r4EWz6LuN9z6g/my-forest-1-9Egv7m68ZDAxUS77.svg" 
+            src="/memories/memories_image.png" 
             alt="Global stories" 
-            className="w-full h-auto object-contain" 
+            className="w-full h-auto object-contain mix-blend-multiply rounded-3xl" 
           />
         </motion.div>
 
