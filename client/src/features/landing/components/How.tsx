@@ -30,6 +30,15 @@ const Step = ({
       >
         <img src={image} alt={label} className="w-full h-auto object-contain mix-blend-multiply rounded-3xl" />
       </motion.div>
+      <motion.h4
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="text-4xl md:text-5xl font-bold text-black tracking-tighter mt-2"
+      >
+        {label}
+      </motion.h4>
     </div>
 
     {/* Content Area */}
