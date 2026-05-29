@@ -17,7 +17,7 @@ export const NumbersGrid: React.FC = () => {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 1 }}
-          src="https://assets.zyrosite.com/AE0r4EWz6LuN9z6g/forest.-times-1-2clKT98XA9kyXQm1.svg" 
+          src="/img/stats_character.png" 
           alt="Forest Times reader" 
           className="h-[550px] w-auto object-contain"
         />
