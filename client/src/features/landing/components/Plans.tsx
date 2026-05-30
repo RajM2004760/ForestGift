@@ -270,11 +270,11 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
             price="1,000"
             tagline="Perfect for young pioneers beginning their lifelong green journey."
             features={[
-              "1 Premium tree planted & nurtured",
-              "Sustains 2 people with daily oxygen",
-              "Absorbs 22kg of CO₂ annually",
-              "Digital Birthday Legacy Certificate",
-              "Exact GPS tracking & location updates"
+              "1 Tree Planted",
+              "Small Birthday Cake",
+              "Basic Eco-Friendly Gift",
+              "Plantation Certificate",
+              "Supporter Community Badge"
             ]}
             badge="FRESH START"
             image="/plans/plan_1_tree.png"
@@ -288,11 +288,11 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
             price="5,000"
             tagline="For active change-makers establishing a robust ecological impact."
             features={[
-              "5 Premium trees planted & registered",
-              "Sustains 10 people with daily oxygen",
-              "Absorbs 110kg of CO₂ annually",
-              "Custom Engraved Timber Plaque",
-              "Quarterly growth & photo reports"
+              "5 Trees Planted",
+              "Medium Birthday Cake",
+              "Premium Eco-Friendly Gift",
+              "Plantation Certificate",
+              "Creator Badge, Event Invites & Discounts"
             ]}
             badge="MOST POPULAR"
             image="/plans/plan_5_trees.png"
@@ -306,12 +306,11 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
             price="10,000"
             tagline="A noble, heavy-impact legacy seeding a high-biodiversity micro-forest."
             features={[
-              "10 Trees planted in a dedicated cluster",
-              "Sustains 20 people with daily oxygen",
-              "Absorbs 220kg of CO₂ annually",
-              "Premium Engraved Brass Plaque",
-              "Lifetime GPS & Drone Photo updates",
-              "Creates a thriving local wild habitat"
+              "10 Trees Planted",
+              "Premium Birthday Cake",
+              "Premium Gift Box",
+              "Plantation Certificate",
+              "Guardian Badge, Eco-Pass & Impact Report"
             ]}
             badge="LEADER IMPACT"
             image="/plans/plan_10_trees.png"

@@ -5,21 +5,7 @@ export const Memories: React.FC = () => {
   return (
     <section className="py-12 px-6 bg-white overflow-hidden flex flex-col items-center">
       <div className="max-w-7xl mx-auto w-full flex flex-col items-center">
-        {/* Heading moved upwards */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-0 relative z-10"
-        >
-          <h2 className="text-5xl md:text-[80px] font-bold tracking-tighter leading-none mb-4">
-            Forest. <span className="text-[#247114]">Memories</span>
-          </h2>
-          <p className="text-gray-900 text-lg md:text-xl font-medium tracking-tight">
-            Every Birthday Becomes a Living Story
-          </p>
-        </motion.div>
+
 
         {/* Image moved towards the bottom with a very tight gap */}
         <motion.div 
