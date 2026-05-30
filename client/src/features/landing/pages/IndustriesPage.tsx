@@ -167,6 +167,11 @@ export const IndustriesPage: React.FC = () => {
           <div className="w-24 h-1 bg-[#247114] opacity-20 mx-auto my-16 rounded-full"></div>
           <h3 className="text-4xl font-bold tracking-tighter text-[#247114]">FORESTGIFT</h3>
           <p className="text-2xl text-gray-600 font-medium">Building measurable sustainability systems for forward-thinking organizations.</p>
+          <div className="pt-8">
+             <button onClick={() => window.open('https://forms.gle/Jmmht11wg82mZRQh7', '_blank')} className="px-10 py-5 bg-[#247114] text-white rounded-full font-bold text-lg hover:bg-[#1a520e] transition-colors shadow-xl shadow-[#247114]/20">
+               Explore Forest for Companies
+             </button>
+          </div>
         </section>
 
       </main>

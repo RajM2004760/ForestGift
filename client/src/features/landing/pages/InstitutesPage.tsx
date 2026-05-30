@@ -135,6 +135,11 @@ export const InstitutesPage: React.FC = () => {
           <p className="text-lg text-gray-500 italic mt-4">
             "Transform your campus into a living forest and your students into responsible future leaders."
           </p>
+          <div className="pt-8">
+             <button onClick={() => window.open('https://forms.gle/KR5M3nhxPsg7SqzG9', '_blank')} className="px-10 py-5 bg-[#247114] text-white rounded-full font-bold text-lg hover:bg-[#1a520e] transition-colors shadow-xl shadow-[#247114]/20">
+               Explore Forest for Schools
+             </button>
+          </div>
         </section>
 
       </main>

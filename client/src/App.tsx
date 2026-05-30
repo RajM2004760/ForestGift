@@ -92,7 +92,8 @@ function App() {
     onLogoutClick: handleLogout,
     onIndividualClick: () => navigate('/challenges/individual'),
     onIndustriesClick: () => navigate('/challenges/industries'),
-    onInstitutesClick: () => navigate('/challenges/institutes')
+    onInstitutesClick: () => navigate('/challenges/institutes'),
+    onExploreClick: (type: string) => navigate(`/explore/${type}`)
   };
 
   const isLoginPage = location.pathname === '/login';

@@ -13,7 +13,8 @@ export const Navbar: React.FC<NavigationProps> = ({
   onLogoutClick,
   onIndividualClick,
   onIndustriesClick,
-  onInstitutesClick
+  onInstitutesClick,
+  onExploreClick
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const linkClass = "relative py-2 group hover:text-[#247114] transition-colors cursor-pointer";
@@ -35,7 +36,7 @@ export const Navbar: React.FC<NavigationProps> = ({
         </div>
         
         {/* Desktop Links */}
-        <div className="hidden lg:flex items-center ml-10 space-x-12 text-[18px] font-normal text-gray-800">
+        <div className="hidden lg:flex items-center ml-10 space-x-12 text-[20px] font-normal text-gray-800">
           <div onClick={onAboutClick} className={linkClass}>
             About Us
             <div className={underlineClass}></div>
@@ -62,6 +63,21 @@ export const Navbar: React.FC<NavigationProps> = ({
               <div onClick={onIndividualClick} className="block px-6 py-2.5 text-[14px] font-normal hover:bg-gray-50 hover:text-[#247114] cursor-pointer">Individual</div>
               <div onClick={onIndustriesClick} className="block px-6 py-2.5 text-[14px] font-normal hover:bg-gray-50 hover:text-[#247114] cursor-pointer">Industries</div>
               <div onClick={onInstitutesClick} className="block px-6 py-2.5 text-[14px] font-normal hover:bg-gray-50 hover:text-[#247114] cursor-pointer">Institutes</div>
+            </div>
+          </div>
+          <div className="relative group cursor-pointer py-2">
+            <div className="flex items-center group-hover:text-[#247114] transition-colors">
+              <span>Explore</span>
+              <svg className="w-3 h-3 ml-1 transformation group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <div className={underlineClass}></div>
+            
+            <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-100 shadow-xl rounded-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <div onClick={() => onExploreClick?.('gifts')} className="block px-6 py-2.5 text-[14px] font-normal hover:bg-gray-50 hover:text-[#247114] cursor-pointer">Gifts</div>
+              <div onClick={() => onExploreClick?.('cakes')} className="block px-6 py-2.5 text-[14px] font-normal hover:bg-gray-50 hover:text-[#247114] cursor-pointer">Cakes</div>
+              <div onClick={() => onExploreClick?.('tours')} className="block px-6 py-2.5 text-[14px] font-normal hover:bg-gray-50 hover:text-[#247114] cursor-pointer">Tours</div>
             </div>
           </div>
         </div>
@@ -130,6 +146,15 @@ export const Navbar: React.FC<NavigationProps> = ({
                 <div onClick={() => { onIndividualClick?.(); setIsMenuOpen(false); }} className="block text-gray-600 font-normal cursor-pointer">Individual</div>
                 <div onClick={() => { onIndustriesClick?.(); setIsMenuOpen(false); }} className="block text-gray-600 font-normal cursor-pointer">Industries</div>
                 <div onClick={() => { onInstitutesClick?.(); setIsMenuOpen(false); }} className="block text-gray-600 font-normal cursor-pointer">Institutes</div>
+              </div>
+            </div>
+
+            <div className="py-4 border-b border-gray-100">
+              <div className="text-[18px] font-medium text-gray-900 mb-4">Explore</div>
+              <div className="pl-4 space-y-4">
+                <div onClick={() => { onExploreClick?.('gifts'); setIsMenuOpen(false); }} className="block text-gray-600 font-normal cursor-pointer">Gifts</div>
+                <div onClick={() => { onExploreClick?.('cakes'); setIsMenuOpen(false); }} className="block text-gray-600 font-normal cursor-pointer">Cakes</div>
+                <div onClick={() => { onExploreClick?.('tours'); setIsMenuOpen(false); }} className="block text-gray-600 font-normal cursor-pointer">Tours</div>
               </div>
             </div>
 

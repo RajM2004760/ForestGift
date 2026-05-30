@@ -27,11 +27,14 @@ export const Memories: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 1, delay: 0.2 }}
-          className="w-[100vw] max-w-[100vw] shrink-0 mt-0 -translate-y-8 flex justify-center"
+          className="w-[100vw] max-w-[100vw] shrink-0 mt-8 md:mt-0 translate-y-0 md:-translate-y-8 flex justify-center"
         >
-          <img 
-            src="/memories/memories_image.png" 
-            alt="Global stories" 
+          <video 
+            src="/footer_video.mp4" 
+            autoPlay
+            loop
+            muted
+            playsInline
             className="w-full h-auto md:h-[100vh] object-contain mix-blend-multiply" 
           />
         </motion.div>

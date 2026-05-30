@@ -7,7 +7,6 @@ import { NavigationProps } from '../types';
 export const ExploreCakes: React.FC<NavigationProps> = (props) => {
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a] font-['Inter',_sans-serif]">
-      <Navbar {...props} />
 
       <main className="pt-24 md:pt-32 pb-24">
         {/* SECTION 1 - HERO */}
@@ -31,6 +30,12 @@ export const ExploreCakes: React.FC<NavigationProps> = (props) => {
                 className="px-8 py-4 bg-black text-white rounded-full font-bold tracking-wide hover:bg-[#247114] transition-colors"
               >
                 Explore Mothers
+              </button>
+              <button 
+                onClick={() => window.open('https://forms.gle/Qfm4BxTVNLFWvHUR8', '_blank')}
+                className="px-8 py-4 bg-gray-100 text-black rounded-full font-bold tracking-wide hover:bg-gray-200 transition-colors"
+              >
+                Partner With FOREST
               </button>
             </div>
           </motion.div>

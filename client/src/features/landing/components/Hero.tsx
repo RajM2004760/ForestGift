@@ -7,13 +7,16 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ onPlantClick }) => {
   return (
-    <section className="relative min-h-[640px] md:min-h-[980px] md:h-[120vh] md:max-h-[1200px] overflow-hidden bg-white">
+    <section className="relative min-h-[720px] md:min-h-[980px] md:h-[120vh] md:max-h-[1200px] overflow-hidden bg-white">
       {/* Background Image - Entirely visible at full natural height & width */}
       <div className="absolute inset-x-0 bottom-0 z-0 select-none pointer-events-none flex items-end justify-center">
-        <img 
-          src="/web animation forestgift.gif" 
-          alt="Forest background" 
-          className="w-full h-auto object-contain object-bottom scale-100 translate-y-0 origin-bottom"
+        <video 
+          src="/hero_section_video.mp4" 
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-[95%] md:w-[85%] lg:w-[75%] max-w-[1000px] h-auto object-contain object-bottom mx-auto"
         />
       </div>
 

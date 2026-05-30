@@ -11,4 +11,5 @@ export interface NavigationProps {
   onIndividualClick?: () => void;
   onIndustriesClick?: () => void;
   onInstitutesClick?: () => void;
+  onExploreClick?: (type: string) => void;
 }

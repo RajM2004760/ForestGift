@@ -17,7 +17,6 @@ export const ExploreTours: React.FC<NavigationProps> = (props) => {
 
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a] font-['Inter',_sans-serif]">
-      <Navbar {...props} />
 
       <main className="pt-24 md:pt-32 pb-24">
         {/* SECTION 1 - HERO */}

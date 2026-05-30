@@ -134,6 +134,11 @@ export const IndividualPage: React.FC = () => {
           <p className="text-lg text-gray-500 italic mt-4">
             "Don’t just celebrate life moments. Grow them into a forest."
           </p>
+          <div className="pt-8">
+             <button onClick={() => window.open('https://forms.gle/ur6KpTd6C9M5sZRn6', '_blank')} className="px-10 py-5 bg-[#247114] text-white rounded-full font-bold text-lg hover:bg-[#1a520e] transition-colors shadow-xl shadow-[#247114]/20">
+               Explore Forest for Society
+             </button>
+          </div>
         </section>
 
       </main>
