@@ -2140,22 +2140,28 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
             </button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {stories.map(story => (
-              <div key={story._id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col gap-4">
-                <img src={story.imageUrl} alt={story.title} className="w-full h-48 object-cover rounded-xl" />
-                <div>
-                  <h3 className="font-bold text-lg text-gray-900">{story.title}</h3>
-                  <p className="text-sm text-gray-600 line-clamp-2 mt-2">{story.content}</p>
-                  {story.linkUrl && <a href={story.linkUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-500 mt-2 block break-all">{story.linkUrl}</a>}
+              <div key={story._id} className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col gap-4 relative overflow-hidden group">
+                {story.imageUrl ? (
+                  <img src={story.imageUrl} alt={story.title} className="w-full h-48 object-cover rounded-xl bg-gray-100" />
+                ) : (
+                  <div className="w-full h-48 bg-gray-50 border border-dashed border-gray-200 rounded-xl flex items-center justify-center">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">No Image Provided</span>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-gray-900">{story.title || 'Untitled Story'}</h3>
+                  <p className="text-sm text-gray-600 line-clamp-3 mt-2">{story.content || 'No content provided.'}</p>
+                  {story.linkUrl && <a href={story.linkUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-500 mt-2 block break-all hover:underline">{story.linkUrl}</a>}
                 </div>
-                <div className="mt-auto pt-4 border-t border-gray-50 flex justify-end gap-4">
+                <div className="mt-auto pt-4 border-t border-gray-100 flex justify-end gap-4">
                   <button 
                     onClick={() => {
                       setStoryFormData({
-                        title: story.title,
-                        content: story.content,
-                        imageUrl: story.imageUrl,
+                        title: story.title || '',
+                        content: story.content || '',
+                        imageUrl: story.imageUrl || '',
                         linkUrl: story.linkUrl || ''
                       });
                       setEditingStoryId(story._id);
