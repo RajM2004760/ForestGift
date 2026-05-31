@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { AdminDashboardLayout } from './layouts/AdminDashboardLayout';
 import { Badge, Icon, StatCard } from '../../shared/components/UI';
-import { fetchUsers, fetchNGOs, fetchActivities, createUser, assignNGO, createNGO, fetchCakeVendors, createCakeVendor, updateCakeStatus, fetchAllSubmissions, createCertificate, fetchCertificates, fetchAllBulkTreeEntries, deleteUser, updateUser, deleteNGO, updateAdminNGO, deleteCakeVendor, updateCakeVendor, fetchAdminSettings, updateAdminSettings, resendWelcomeEmail, fetchStories, createStory, deleteStory } from '../../api';
+import { fetchUsers, fetchNGOs, fetchActivities, createUser, assignNGO, createNGO, fetchCakeVendors, createCakeVendor, updateCakeStatus, fetchAllSubmissions, createCertificate, fetchCertificates, fetchAllBulkTreeEntries, deleteUser, updateUser, deleteNGO, updateAdminNGO, deleteCakeVendor, updateCakeVendor, fetchAdminSettings, updateAdminSettings, resendWelcomeEmail, fetchStories, createStory, deleteStory, updateStory } from '../../api';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
@@ -64,6 +64,7 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
   const [certificates, setCertificates] = useState<any[]>([]);
   const [stories, setStories] = useState<any[]>([]);
   const [showAddStoryModal, setShowAddStoryModal] = useState(false);
+  const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
   const [storyFormData, setStoryFormData] = useState({ title: '', content: '', imageUrl: '', linkUrl: '' });
   const [ngoFilter, setNgoFilter] = useState("All NGOs");
   const [userSearch, setUserSearch] = useState("");
@@ -2148,7 +2149,22 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                   <p className="text-sm text-gray-600 line-clamp-2 mt-2">{story.content}</p>
                   {story.linkUrl && <a href={story.linkUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-500 mt-2 block break-all">{story.linkUrl}</a>}
                 </div>
-                <div className="mt-auto pt-4 border-t border-gray-50 flex justify-end">
+                <div className="mt-auto pt-4 border-t border-gray-50 flex justify-end gap-4">
+                  <button 
+                    onClick={() => {
+                      setStoryFormData({
+                        title: story.title,
+                        content: story.content,
+                        imageUrl: story.imageUrl,
+                        linkUrl: story.linkUrl || ''
+                      });
+                      setEditingStoryId(story._id);
+                      setShowAddStoryModal(true);
+                    }}
+                    className="text-xs text-blue-500 hover:text-blue-600 font-bold uppercase"
+                  >
+                    Edit Story
+                  </button>
                   <button 
                     onClick={async () => {
                       if(window.confirm('Delete this story?')) {
@@ -2181,10 +2197,14 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
               <div className="bg-white rounded-[40px] w-full max-w-xl overflow-hidden shadow-2xl relative">
                 <div className="p-8 pb-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                   <div>
-                    <h2 className="text-2xl font-bold text-zinc-900">Add Story</h2>
+                    <h2 className="text-2xl font-bold text-zinc-900">{editingStoryId ? 'Edit Story' : 'Add Story'}</h2>
                     <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Publish to Landing Page</p>
                   </div>
-                  <button onClick={() => setShowAddStoryModal(false)} className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-black transition-all shadow-sm">
+                  <button onClick={() => {
+                    setShowAddStoryModal(false);
+                    setEditingStoryId(null);
+                    setStoryFormData({ title: '', content: '', imageUrl: '', linkUrl: '' });
+                  }} className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-black transition-all shadow-sm">
                     <Icon name="x" size={16} />
                   </button>
                 </div>
@@ -2194,13 +2214,19 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                     e.preventDefault();
                     setLoading(true);
                     try {
-                      await createStory(storyFormData);
-                      toast.success('Story created successfully');
+                      if (editingStoryId) {
+                        await updateStory(editingStoryId, storyFormData);
+                        toast.success('Story updated successfully');
+                      } else {
+                        await createStory(storyFormData);
+                        toast.success('Story created successfully');
+                      }
                       setShowAddStoryModal(false);
+                      setEditingStoryId(null);
                       setStoryFormData({ title: '', content: '', imageUrl: '', linkUrl: '' });
                       refreshData();
                     } catch(err) {
-                      toast.error('Failed to create story');
+                      toast.error(editingStoryId ? 'Failed to update story' : 'Failed to create story');
                     } finally {
                       setLoading(false);
                     }
@@ -2213,7 +2239,7 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                     <input type="url" placeholder="Link URL (Optional link for 'Read More')" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:bg-white focus:border-black outline-none transition-all" value={storyFormData.linkUrl} onChange={e => setStoryFormData({...storyFormData, linkUrl: e.target.value})} />
                   </div>
                   <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-900 transition-all shadow-xl disabled:opacity-50">
-                    {loading ? 'Publishing...' : 'Publish Story'}
+                    {loading ? (editingStoryId ? 'Updating...' : 'Publishing...') : (editingStoryId ? 'Update Story' : 'Publish Story')}
                   </button>
                 </form>
               </div>

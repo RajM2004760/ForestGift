@@ -6,29 +6,10 @@ import { NavigationProps } from '../types';
 import { fetchStories } from '../../../api';
 import { Search, Twitter, Facebook, Linkedin } from 'lucide-react';
 
-const defaultStories = [
-  {
-    id: "def-1",
-    title: "Celebrate Nature: Join Forest in Planting Trees and Giving Back to Earth",
-    description: "Welcome to Forest, where we celebrate life through nature. Discover how you can plant trees, gift personal forests, and support environmental projects. Join our community passionate about sustainability and explore eco-friendly products while tracking your tree plantations. Together, let's create a greener future—one tree at a time.",
-    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=800",
-    date: new Date("2024-05-08").toLocaleDateString(),
-    createdAt: new Date("2024-05-08").getTime(),
-    readTime: "1 min read"
-  },
-  {
-    id: "def-2",
-    title: "Celebrating Nature: Join Us in Planting Trees and Empowering Sustainability",
-    description: "At Forest, we celebrate life through nature by planting trees and gifting forests. Explore our eco-friendly products, track your tree plantations, and become part of a passionate community. Join us in creating a greener future, one tree at a time. Together, we can make a difference for generations to come.",
-    image: "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&q=80&w=800",
-    date: new Date("2024-05-08").toLocaleDateString(),
-    createdAt: new Date("2024-05-08").getTime(),
-    readTime: "1 min read"
-  }
-];
+// No default fallback stories; relies fully on fetched DB content.
 
 export const StoriesPage: React.FC<NavigationProps> = ({ onHomeClick, onAboutClick, onStoriesClick, onPlantClick, onLoginClick }) => {
-  const [stories, setStories] = useState<any[]>(defaultStories);
+  const [stories, setStories] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
@@ -47,7 +28,9 @@ export const StoriesPage: React.FC<NavigationProps> = ({ onHomeClick, onAboutCli
             createdAt: new Date(s.createdAt).getTime(),
             readTime: "1 min read"
           }));
-          setStories([...formatted, ...defaultStories]);
+          setStories(formatted);
+        } else {
+          setStories([]);
         }
       } catch (error) {
         console.error('Failed to load stories:', error);
