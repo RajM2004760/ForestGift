@@ -30,3 +30,24 @@ export const deleteStory = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+export const updateStory = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { title, content, imageUrl, linkUrl } = req.body;
+    
+    const updatedStory = await Story.findByIdAndUpdate(
+      id,
+      { title, content, imageUrl, linkUrl },
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedStory) {
+      return res.status(404).json({ message: 'Story not found' });
+    }
+    
+    res.json(updatedStory);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
