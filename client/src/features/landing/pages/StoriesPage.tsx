@@ -1,36 +1,42 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { motion } from 'framer-motion';
 import { NavigationProps } from '../types';
 import { fetchStories } from '../../../api';
+import { Search, Twitter, Facebook, Linkedin } from 'lucide-react';
 
 const defaultStories = [
   {
+    id: "def-1",
     title: "Celebrate Nature: Join Forest in Planting Trees and Giving Back to Earth",
     description: "Welcome to Forest, where we celebrate life through nature. Discover how you can plant trees, gift personal forests, and support environmental projects. Join our community passionate about sustainability and explore eco-friendly products while tracking your tree plantations. Together, let's create a greener future—one tree at a time.",
     image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=800",
-    date: "5/8/2024",
+    date: new Date("2024-05-08").toLocaleDateString(),
+    createdAt: new Date("2024-05-08").getTime(),
     readTime: "1 min read"
   },
   {
+    id: "def-2",
     title: "Celebrating Nature: Join Us in Planting Trees and Empowering Sustainability",
     description: "At Forest, we celebrate life through nature by planting trees and gifting forests. Explore our eco-friendly products, track your tree plantations, and become part of a passionate community. Join us in creating a greener future, one tree at a time. Together, we can make a difference for generations to come.",
     image: "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&q=80&w=800",
-    date: "5/8/2024",
+    date: new Date("2024-05-08").toLocaleDateString(),
+    createdAt: new Date("2024-05-08").getTime(),
     readTime: "1 min read"
   }
 ];
 
 export const StoriesPage: React.FC<NavigationProps> = ({ onHomeClick, onAboutClick, onStoriesClick, onPlantClick, onLoginClick }) => {
   const [stories, setStories] = useState<any[]>(defaultStories);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
   useEffect(() => {
     const loadStories = async () => {
       try {
         const data = await fetchStories();
         if (data && data.length > 0) {
-          // Format backend stories to match UI
           const formatted = data.map((s: any) => ({
             id: s._id,
             title: s.title,
@@ -38,7 +44,8 @@ export const StoriesPage: React.FC<NavigationProps> = ({ onHomeClick, onAboutCli
             image: s.imageUrl,
             linkUrl: s.linkUrl,
             date: new Date(s.createdAt).toLocaleDateString(),
-            readTime: "1 min read" // Could be calculated based on word count
+            createdAt: new Date(s.createdAt).getTime(),
+            readTime: "1 min read"
           }));
           setStories([...formatted, ...defaultStories]);
         }
@@ -49,13 +56,54 @@ export const StoriesPage: React.FC<NavigationProps> = ({ onHomeClick, onAboutCli
     loadStories();
   }, []);
 
+  const filteredAndSortedStories = useMemo(() => {
+    let result = stories.filter(story => 
+      story.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      story.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    result.sort((a, b) => {
+      if (sortOrder === "newest") {
+        return b.createdAt - a.createdAt;
+      } else {
+        return a.createdAt - b.createdAt;
+      }
+    });
+
+    return result;
+  }, [stories, searchQuery, sortOrder]);
+
+  const handleShare = (platform: string, url: string, title: string) => {
+    const text = encodeURIComponent(title);
+    const link = encodeURIComponent(url || window.location.href);
+    let shareUrl = "";
+
+    switch (platform) {
+      case "twitter":
+        shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${link}`;
+        break;
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${link}`;
+        break;
+      case "linkedin":
+        shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${link}&title=${text}`;
+        break;
+      default:
+        break;
+    }
+
+    if (shareUrl) {
+      window.open(shareUrl, "_blank", "width=600,height=400");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a] selection:bg-[#247114] selection:text-white">
       <main className="pt-32 pb-20">
         <div className="max-w-7xl mx-auto px-6">
           
-          {/* Heading Section */}
-          <section className="text-center mb-24">
+          {/* Newspaper Masthead Section */}
+          <section className="text-center mb-12 border-b-2 border-black pb-12">
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -68,38 +116,100 @@ export const StoriesPage: React.FC<NavigationProps> = ({ onHomeClick, onAboutCli
             </p>
           </section>
 
-          {/* Stories Grid */}
-          <div className="grid md:grid-cols-2 gap-12 mb-32">
-            {stories.map((story, i) => (
-              <motion.div 
-                key={i}
+          {/* Editorial Controls */}
+          <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 border-b border-gray-200 pb-6">
+            <div className="relative w-full md:w-96">
+              <div className="absolute inset-y-0 left-0 pl-0 flex items-center pointer-events-none text-black">
+                <Search size={18} />
+              </div>
+              <input 
+                type="text" 
+                placeholder="Search the archive..." 
+                className="w-full bg-transparent border-none pl-8 pr-4 py-2 text-sm font-bold focus:ring-0 outline-none placeholder:text-gray-400"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-4 w-full md:w-auto">
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Sort By:</span>
+              <select 
+                className="bg-transparent border-none text-sm font-bold focus:ring-0 outline-none cursor-pointer text-black"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as "newest" | "oldest")}
+              >
+                <option value="newest">Latest Editions</option>
+                <option value="oldest">From the Archive</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Newspaper Columns Layout */}
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-12 mb-32">
+            {filteredAndSortedStories.map((story, i) => (
+              <motion.article 
+                key={story.id || i}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="group cursor-pointer"
-                onClick={() => story.linkUrl && window.open(story.linkUrl, '_blank')}
+                className="group flex flex-col break-inside-avoid border-t border-black pt-6 mb-12"
               >
-                <div className="aspect-[16/10] overflow-hidden rounded-sm mb-8">
+                <h2 
+                  className="text-2xl font-bold tracking-tight leading-snug group-hover:text-[#247114] transition-colors cursor-pointer mb-4"
+                  onClick={() => story.linkUrl && window.open(story.linkUrl, '_blank')}
+                >
+                  {story.title}
+                </h2>
+                
+                <div 
+                  className="w-full aspect-[16/10] overflow-hidden mb-4 cursor-pointer bg-gray-100"
+                  onClick={() => story.linkUrl && window.open(story.linkUrl, '_blank')}
+                >
                   <img 
                     src={story.image} 
                     alt={story.title} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
                   />
                 </div>
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold tracking-tight leading-snug group-hover:text-[#247114] transition-colors">
-                    {story.title}
-                  </h2>
-                  <p className="text-gray-600 leading-relaxed text-[16px]">
-                    {story.description}
-                  </p>
-                  <p className="text-sm font-medium text-gray-400">
-                    {story.date} · {story.readTime}
-                  </p>
+                
+                <p className="text-gray-800 leading-relaxed text-sm mb-6 flex-1 text-justify">
+                  {story.description}
+                </p>
+                
+                {/* Editorial Footer */}
+                <div className="pt-4 border-t border-gray-200 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold text-black uppercase tracking-widest">
+                      Published {story.date}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 text-black">
+                    <button onClick={() => handleShare("twitter", story.linkUrl, story.title)} className="hover:text-[#247114] transition-colors">
+                      <Twitter size={14} />
+                    </button>
+                    <button onClick={() => handleShare("facebook", story.linkUrl, story.title)} className="hover:text-[#247114] transition-colors">
+                      <Facebook size={14} />
+                    </button>
+                    <button onClick={() => handleShare("linkedin", story.linkUrl, story.title)} className="hover:text-[#247114] transition-colors">
+                      <Linkedin size={14} />
+                    </button>
+                  </div>
                 </div>
-              </motion.div>
+              </motion.article>
             ))}
           </div>
+            
+          {filteredAndSortedStories.length === 0 && (
+            <div className="py-20 text-center w-full border-t border-black pt-12">
+              <p className="text-2xl text-gray-400 font-medium">No stories found in the archive.</p>
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="mt-6 px-8 py-3 bg-black text-white rounded-none text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors"
+              >
+                Clear Search
+              </button>
+            </div>
+          )}
 
         </div>
       </main>
