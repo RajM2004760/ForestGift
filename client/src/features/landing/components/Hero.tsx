@@ -11,12 +11,12 @@ export const Hero: React.FC<HeroProps> = ({ onPlantClick }) => {
       {/* Background Image - Entirely visible at full natural height & width */}
       <div className="absolute inset-x-0 bottom-0 z-0 select-none pointer-events-none flex items-end justify-center">
         <video 
-          src="/hero_section_video.mp4" 
+          src="/hero animation final.mp4" 
           autoPlay
           loop
           muted
           playsInline
-          className="w-[95%] md:w-[85%] lg:w-[75%] max-w-[1000px] h-auto object-contain object-bottom mx-auto"
+          className="w-[95%] md:w-[85%] lg:w-[75%] max-w-[1000px] h-auto object-contain object-bottom mx-auto outline-none border-none bg-transparent mix-blend-multiply scale-[1.02] md:scale-100"
         />
       </div>
 
