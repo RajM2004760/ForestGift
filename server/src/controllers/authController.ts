@@ -12,11 +12,11 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // Admin login logic
-    const ADMIN_EMAIL = 'admin@forestgift.com'; // Updated branding
-    if (email === ADMIN_EMAIL) {
+    const ADMIN_EMAILS = ['director@forestgift.in', 'admin@forestgift.com'];
+    if (ADMIN_EMAILS.includes(email)) {
       return res.json({
         role: 'admin',
-        user: { email: ADMIN_EMAIL, name: 'Administrator' }
+        user: { email: email, name: 'Administrator' }
       });
     }
 
