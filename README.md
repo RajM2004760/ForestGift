@@ -76,7 +76,7 @@ The project uses email-only authentication for demonstration. You can use the fo
 
 | Role | Email | Dashboard Access |
 | :--- | :--- | :--- |
-| **Admin** | `admin@forestgift.com` | Full Control Panel |
+| **Admin** | `director@forestgift.in` | Full Control Panel |
 | **User** | `ramesh@email.com` | My Plantation Portal |
 | **NGO** | `greenearth@ngo.in` | NGO Management Console |
 | **Vendor** | `indore@cakes.com` | Bakery Allocation Panel |

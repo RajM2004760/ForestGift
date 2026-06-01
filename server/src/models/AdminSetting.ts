@@ -11,7 +11,7 @@ export interface IAdminSetting extends Document {
 
 const AdminSettingSchema: Schema = new Schema({
   platformName: { type: String, default: 'ForestGift Ecosystem' },
-  supportEmail: { type: String, default: 'admin@forestgift.com' },
+  supportEmail: { type: String, default: 'director@forestgift.in' },
   supportPhone: { type: String, default: '+91-9876543210' },
   treeUnitPrice: { type: Number, default: 1000 },
   maintenanceMode: { type: Boolean, default: false },
