@@ -1,14 +1,16 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { motion } from 'framer-motion';
 import { NavigationProps } from '../types';
 import { fetchStories } from '../../../api';
-import { Search, Twitter, Facebook, Linkedin } from 'lucide-react';
+import { Search, Facebook, Youtube, Instagram, Linkedin, Share2 } from 'lucide-react';
 
 // No default fallback stories; relies fully on fetched DB content.
 
 export const StoriesPage: React.FC<NavigationProps> = ({ onHomeClick, onAboutClick, onStoriesClick, onPlantClick, onLoginClick }) => {
+  const navigate = useNavigate();
   const [stories, setStories] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
@@ -56,29 +58,7 @@ export const StoriesPage: React.FC<NavigationProps> = ({ onHomeClick, onAboutCli
     return result;
   }, [stories, searchQuery, sortOrder]);
 
-  const handleShare = (platform: string, url: string, title: string) => {
-    const text = encodeURIComponent(title);
-    const link = encodeURIComponent(url || window.location.href);
-    let shareUrl = "";
-
-    switch (platform) {
-      case "twitter":
-        shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${link}`;
-        break;
-      case "facebook":
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${link}`;
-        break;
-      case "linkedin":
-        shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${link}&title=${text}`;
-        break;
-      default:
-        break;
-    }
-
-    if (shareUrl) {
-      window.open(shareUrl, "_blank", "width=600,height=400");
-    }
-  };
+  // No handleShare needed anymore.
 
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a] selection:bg-[#247114] selection:text-white">
@@ -127,26 +107,17 @@ export const StoriesPage: React.FC<NavigationProps> = ({ onHomeClick, onAboutCli
           </div>
 
           {/* Newspaper Columns Layout */}
-          <div className="columns-1 md:columns-2 lg:columns-3 gap-12 mb-32">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-32">
             {filteredAndSortedStories.map((story, i) => (
               <motion.article 
                 key={story.id || i}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="group flex flex-col break-inside-avoid border-t border-black pt-6 mb-12"
+                className="group flex flex-col bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden cursor-pointer"
+                onClick={() => navigate(`/story/${story.id}`)}
               >
-                <h2 
-                  className="text-2xl font-bold tracking-tight leading-snug group-hover:text-[#247114] transition-colors cursor-pointer mb-4"
-                  onClick={() => story.linkUrl && window.open(story.linkUrl, '_blank')}
-                >
-                  {story.title}
-                </h2>
-                
-                <div 
-                  className="w-full aspect-[16/10] overflow-hidden mb-4 cursor-pointer bg-gray-100"
-                  onClick={() => story.linkUrl && window.open(story.linkUrl, '_blank')}
-                >
+                <div className="w-full aspect-[16/10] bg-gray-50 flex items-center justify-center p-4">
                   <img 
                     src={(() => {
                       const url = story.image;
@@ -158,34 +129,60 @@ export const StoriesPage: React.FC<NavigationProps> = ({ onHomeClick, onAboutCli
                       return url;
                     })()}
                     alt={story.title} 
-                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
+                    className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
                 
-                <p className="text-gray-800 leading-relaxed text-sm mb-6 flex-1 text-justify">
-                  {story.description}
-                </p>
+                <div className="p-6 flex flex-col flex-1">
+                  <h2 className="text-xl font-bold tracking-tight leading-snug group-hover:text-[#247114] transition-colors mb-3 line-clamp-2">
+                    {story.title}
+                  </h2>
+                  
+                  <p className="text-gray-600 leading-relaxed text-sm mb-6 flex-1 line-clamp-3">
+                    {story.description}
+                  </p>
                 
                 {/* Editorial Footer */}
-                <div className="pt-4 border-t border-gray-200 flex items-center justify-between">
+                <div className="pt-4 mt-auto border-t border-gray-100 flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-bold text-black uppercase tracking-widest">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                       Published {story.date}
                     </p>
                   </div>
                   
-                  <div className="flex items-center gap-3 text-black">
-                    <button onClick={() => handleShare("twitter", story.linkUrl, story.title)} className="hover:text-[#247114] transition-colors">
-                      <Twitter size={14} />
+                  <div className="flex items-center gap-3 text-gray-400">
+                    <button 
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const storyUrl = window.location.origin + `/story/${story.id}`;
+                        const shareData = {
+                          title: story.title,
+                          text: `Check out this inspiring story from ForestGift:\n\n"${story.title}"\n\nRead more here: `,
+                          url: storyUrl
+                        };
+                        try {
+                          if (navigator.share) {
+                            await navigator.share(shareData);
+                          } else {
+                            await navigator.clipboard.writeText(`${shareData.title}\n\n${shareData.text}${shareData.url}`);
+                            alert('Link copied to clipboard!');
+                          }
+                        } catch (err) {
+                          console.log('Error sharing:', err);
+                        }
+                      }}
+                      className="hover:text-[#247114] transition-colors bg-gray-50 p-1.5 rounded-full text-gray-500 mr-2"
+                      title="Share Story"
+                    >
+                      <Share2 size={14} />
                     </button>
-                    <button onClick={() => handleShare("facebook", story.linkUrl, story.title)} className="hover:text-[#247114] transition-colors">
-                      <Facebook size={14} />
-                    </button>
-                    <button onClick={() => handleShare("linkedin", story.linkUrl, story.title)} className="hover:text-[#247114] transition-colors">
-                      <Linkedin size={14} />
-                    </button>
+                    <a href="https://www.facebook.com/profile.php?id=61572164207632" target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="hover:text-[#247114] transition-colors"><Facebook size={14} /></a>
+                    <a href="https://www.youtube.com/@forestgift_india" target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="hover:text-[#247114] transition-colors"><Youtube size={14} /></a>
+                    <a href="https://www.instagram.com/forestgift_india/" target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="hover:text-[#247114] transition-colors"><Instagram size={14} /></a>
+                    <a href="https://www.linkedin.com/company/forestgift/" target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="hover:text-[#247114] transition-colors"><Linkedin size={14} /></a>
                   </div>
                 </div>
+              </div>
               </motion.article>
             ))}
           </div>

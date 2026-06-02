@@ -66,6 +66,7 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
   const [showAddStoryModal, setShowAddStoryModal] = useState(false);
   const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
   const [storyFormData, setStoryFormData] = useState({ title: '', content: '', imageUrl: '', linkUrl: '' });
+  const [imageInputType, setImageInputType] = useState<'url' | 'upload'>('url');
   const [ngoFilter, setNgoFilter] = useState("All NGOs");
   const [userSearch, setUserSearch] = useState("");
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -2171,6 +2172,7 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                         imageUrl: story.imageUrl || '',
                         linkUrl: story.linkUrl || ''
                       });
+                      setImageInputType((story.imageUrl && story.imageUrl.startsWith('data:image')) ? 'upload' : 'url');
                       setEditingStoryId(story._id);
                       setShowAddStoryModal(true);
                     }}
@@ -2217,6 +2219,7 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                     setShowAddStoryModal(false);
                     setEditingStoryId(null);
                     setStoryFormData({ title: '', content: '', imageUrl: '', linkUrl: '' });
+                    setImageInputType('url');
                   }} className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-black transition-all shadow-sm">
                     <Icon name="x" size={16} />
                   </button>
@@ -2237,6 +2240,7 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                       setShowAddStoryModal(false);
                       setEditingStoryId(null);
                       setStoryFormData({ title: '', content: '', imageUrl: '', linkUrl: '' });
+                      setImageInputType('url');
                       refreshData();
                     } catch(err) {
                       toast.error(editingStoryId ? 'Failed to update story' : 'Failed to create story');
@@ -2248,7 +2252,60 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                   <div className="space-y-4">
                     <input required type="text" placeholder="Story Title" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all" value={storyFormData.title} onChange={e => setStoryFormData({...storyFormData, title: e.target.value})} />
                     <textarea required placeholder="Story Content / Description" rows={4} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:bg-white focus:border-black outline-none transition-all resize-none" value={storyFormData.content} onChange={e => setStoryFormData({...storyFormData, content: e.target.value})} />
-                    <input required type="url" placeholder="Image URL (e.g., https://unsplash.com/... or https://drive.google.com/...)" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:bg-white focus:border-black outline-none transition-all" value={storyFormData.imageUrl} onChange={e => setStoryFormData({...storyFormData, imageUrl: e.target.value})} />
+                    
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
+                      <div className="flex gap-6">
+                        <label className="flex items-center gap-2 text-sm font-bold text-gray-700 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="imageInputType" 
+                            checked={imageInputType === 'url'} 
+                            onChange={() => {
+                              setImageInputType('url');
+                              setStoryFormData({...storyFormData, imageUrl: ''});
+                            }} 
+                            className="accent-black"
+                          />
+                          Use Image URL
+                        </label>
+                        <label className="flex items-center gap-2 text-sm font-bold text-gray-700 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="imageInputType" 
+                            checked={imageInputType === 'upload'} 
+                            onChange={() => {
+                              setImageInputType('upload');
+                              setStoryFormData({...storyFormData, imageUrl: ''});
+                            }} 
+                            className="accent-black"
+                          />
+                          Upload to Mongo
+                        </label>
+                      </div>
+
+                      {imageInputType === 'url' ? (
+                        <input required type="url" placeholder="Image URL (e.g., https://unsplash.com/... or https://drive.google.com/...)" className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm font-medium focus:border-black outline-none transition-all" value={storyFormData.imageUrl} onChange={e => setStoryFormData({...storyFormData, imageUrl: e.target.value})} />
+                      ) : (
+                        <div className="space-y-2">
+                          <input required={!storyFormData.imageUrl} type="file" accept="image/*" className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm font-medium focus:border-black outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-black hover:file:bg-gray-200 cursor-pointer" onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setStoryFormData({...storyFormData, imageUrl: reader.result as string});
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }} />
+                          {storyFormData.imageUrl && storyFormData.imageUrl.startsWith('data:image') && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">✓ Image Data Prepared for Upload</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
                     <input type="url" placeholder="Link URL (Optional link for 'Read More')" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:bg-white focus:border-black outline-none transition-all" value={storyFormData.linkUrl} onChange={e => setStoryFormData({...storyFormData, linkUrl: e.target.value})} />
                   </div>
                   <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-900 transition-all shadow-xl disabled:opacity-50">

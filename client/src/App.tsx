@@ -11,6 +11,7 @@ import { LandingPage } from './features/landing/pages/LandingPage';
 import { Navbar } from './features/landing/components/Navbar';
 import { AboutPage } from './features/landing/pages/AboutPage';
 import { StoriesPage } from './features/landing/pages/StoriesPage';
+import { StoryDetailPage } from './features/landing/pages/StoryDetailPage';
 import { PlantPage } from './features/landing/pages/PlantPage';
 import { ExplorePage } from './features/landing/pages/ExplorePage';
 import { WhatsAppButton } from './shared/components/WhatsAppButton';
@@ -116,6 +117,7 @@ function App() {
         } />
         <Route path="/about" element={<AboutPage {...commonProps} />} />
         <Route path="/stories" element={<StoriesPage {...commonProps} />} />
+        <Route path="/story/:id" element={<StoryDetailPage {...commonProps} />} />
         <Route path="/plant" element={<PlantPage {...commonProps} />} />
         <Route path="/explore/:type" element={<ExploreWrapper {...commonProps} />} />
         <Route path="/payment-success" element={<PaymentSuccessPage />} />
