@@ -27,7 +27,7 @@ export const sendWelcomeEmail = async (userEmail: string, userName: string, toke
             </div>
             
             <div style="text-align: center; margin-top: 40px;">
-                <a href="http://localhost:5173/login" style="background-color: #059669; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold; display: inline-block;">Access Your Dashboard</a>
+                <a href="https://forestgift.in/login" style="background-color: #059669; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold; display: inline-block;">Access Your Dashboard</a>
             </div>
             
             <hr style="border: 0; border-top: 1px solid #edf2f7; margin: 40px 0;" />
