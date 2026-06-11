@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { X, User, Mail, Calendar, Phone, MapPin, ChevronRight, Trees, Heart } from 'lucide-react';
-import { getRazorpayKey, createRazorpayOrder, verifyRazorpayPayment, recordBankTransfer } from '../../../api';
-
+import { getRazorpayKey, createRazorpayOrder, verifyRazorpayPayment } from '../../../api';
 const loadScript = (src: string) => {
   return new Promise((resolve) => {
     const script = document.createElement('script');
@@ -110,9 +109,6 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
   const [showForm, setShowForm] = useState(false);
   const [pledgeChecked, setPledgeChecked] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<{ amount: number; label: string } | null>(null);
-  const [paymentStep, setPaymentStep] = useState<'details' | 'method'>('details');
-  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'bank' | null>(null);
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -129,15 +125,13 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
   const handlePlanClick = (amount: number, label: string) => {
     setSelectedPlan({ amount, label });
     setPledgeChecked(false);
-    setPaymentStep('details');
-    setPaymentMethod(null);
     setShowForm(true);
   };
 
   const handleDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPlan || !pledgeChecked) return;
-    setPaymentStep('method');
+    handleRazorpayPayment();
   };
 
   const handleRazorpayPayment = async () => {
@@ -213,37 +207,6 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
       alert('Error initiating payment');
     } finally {
       setProcessingId(null);
-    }
-  };
-
-  const handleBankTransferSubmit = async () => {
-    if (!selectedPlan) return;
-    const { amount, label } = selectedPlan;
-    setIsPlacingOrder(true);
-
-    try {
-      await recordBankTransfer({
-        userDetails: {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          dob: formData.dob,
-          address: `${formData.city}, ${formData.state}, ${formData.country} - ${formData.pincode}`
-        },
-        planDetails: {
-          amount,
-          label,
-          trees: label === 'CHILD' ? 1 : label === 'YOUTH' ? 5 : 10
-        }
-      });
-
-      navigate('/payment-success');
-    } catch (err) {
-      console.error('Bank Transfer registration failed:', err);
-      alert('Failed to register Bank Transfer order.');
-    } finally {
-      setIsPlacingOrder(false);
-      setShowForm(false);
     }
   };
 
@@ -339,9 +302,8 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
               className="relative bg-white w-full max-w-lg rounded-[32px] shadow-2xl border border-emerald-100 z-10 max-h-[90vh] overflow-y-auto"
             >
               <div className="p-8">
-                {paymentStep === 'details' ? (
-                  <>
-                    {/* Modal Header */}
+                <>
+                  {/* Modal Header */}
                     <div className="flex justify-between items-center mb-6">
                       <div>
                         <h3 className="text-2xl font-bold">Planting for a better future</h3>
@@ -503,10 +465,10 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
                       <div className="pt-4">
                         <button
                           type="submit"
-                          disabled={!pledgeChecked}
+                          disabled={!pledgeChecked || processingId !== null}
                           className="w-full py-4 bg-[#247114] hover:bg-[#1b550e] disabled:bg-gray-200 text-white disabled:text-gray-400 rounded-2xl font-bold text-xs tracking-widest uppercase flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-[#247114]/25 active:scale-[0.98] cursor-pointer group"
                         >
-                          PROCEED TO PAY ₹{selectedPlan?.amount.toLocaleString()}
+                          {processingId ? 'PROCESSING...' : `PROCEED TO PAY ₹${selectedPlan?.amount.toLocaleString()}`}
                           <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                         </button>
                         <p className="text-center text-xs text-gray-400 mt-4">
@@ -514,142 +476,7 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
                         </p>
                       </div>
                     </form>
-                  </>
-                ) : (
-                  <>
-                    {/* Payment Method Step */}
-                    <div className="flex justify-between items-center mb-6">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => setPaymentStep('details')}
-                          className="p-2 hover:bg-emerald-50 rounded-full text-gray-500 hover:text-[#247114] transition-colors cursor-pointer"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                          </svg>
-                        </button>
-                        <div>
-                          <h3 className="text-xl font-bold">Choose Payment</h3>
-                          <p className="text-xs text-gray-500">Select your preferred payment method</p>
-                        </div>
-                      </div>
-                      <button onClick={() => setShowForm(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
-                        <X className="w-6 h-6 text-gray-500" />
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div
-                        onClick={() => setPaymentMethod('razorpay')}
-                        className={`p-5 border rounded-2xl cursor-pointer transition-all flex flex-col items-center justify-center text-center space-y-2.5 ${paymentMethod === 'razorpay'
-                            ? 'border-[#247114] bg-emerald-50/20 shadow-sm shadow-emerald-100/50'
-                            : 'border-gray-100 hover:border-emerald-100 hover:bg-emerald-50/5'
-                          }`}
-                      >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${paymentMethod === 'razorpay' ? 'bg-[#247114] text-white' : 'bg-emerald-50 text-emerald-600'}`}>
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-xs text-gray-900">Razorpay</h4>
-                          <p className="text-[9px] text-gray-400 font-semibold mt-0.5">UPI, Cards, NetBanking</p>
-                        </div>
-                      </div>
-
-                      <div
-                        onClick={() => setPaymentMethod('bank')}
-                        className={`p-5 border rounded-2xl cursor-pointer transition-all flex flex-col items-center justify-center text-center space-y-2.5 ${paymentMethod === 'bank'
-                            ? 'border-[#247114] bg-emerald-50/20 shadow-sm shadow-emerald-100/50'
-                            : 'border-gray-100 hover:border-emerald-100 hover:bg-emerald-50/5'
-                          }`}
-                      >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${paymentMethod === 'bank' ? 'bg-[#247114] text-white' : 'bg-emerald-50 text-emerald-600'}`}>
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-xs text-gray-900">Bank Transfer</h4>
-                          <p className="text-[9px] text-gray-400 font-semibold mt-0.5">Direct Deposit</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      {paymentMethod === 'razorpay' && (
-                        <div className="space-y-4 animate-in fade-in duration-200">
-                          <div className="bg-emerald-50/40 border border-emerald-100/50 rounded-2xl p-4 text-[11px] font-semibold text-emerald-800 leading-relaxed">
-                            🌿 You will be redirected to the secure Razorpay Payment Gateway. Once the payment succeeds, your tree registration and global certificate will be minted instantly!
-                          </div>
-
-                          <button
-                            onClick={handleRazorpayPayment}
-                            disabled={processingId !== null}
-                            className="w-full py-4 bg-[#247114] hover:bg-[#1b550e] disabled:bg-gray-200 text-white disabled:text-gray-400 rounded-2xl font-bold text-xs tracking-widest uppercase flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-[#247114]/25 active:scale-[0.98] cursor-pointer"
-                          >
-                            {processingId ? 'PROCESSING...' : `PROCEED TO PAY ₹${selectedPlan?.amount.toLocaleString()}`}
-                            <ChevronRight size={14} />
-                          </button>
-                        </div>
-                      )}
-
-                      {paymentMethod === 'bank' && (
-                        <div className="space-y-4 animate-in fade-in duration-200">
-                          <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-5 text-left space-y-3">
-                            <h4 className="text-[#247114] font-bold uppercase tracking-wider text-[10px] border-b border-emerald-100 pb-1.5 flex items-center gap-1.5">
-                              <Trees size={12} />
-                              <span>Bank Transfer Instructions</span>
-                            </h4>
-
-                            <div className="space-y-1.5 text-xs text-gray-800 font-semibold">
-                              <div className="flex justify-between items-center py-0.5">
-                                <span className="text-gray-400 text-[10px] font-bold uppercase">Beneficiary</span>
-                                <span className="font-bold text-gray-900">Rupak Kumar Gouda</span>
-                              </div>
-                              <div className="flex justify-between items-center py-0.5">
-                                <span className="text-gray-400 text-[10px] font-bold uppercase">Role</span>
-                                <span className="font-bold text-gray-900">Founder, Director</span>
-                              </div>
-                              <div className="flex justify-between items-center py-0.5">
-                                <span className="text-gray-400 text-[10px] font-bold uppercase">Bank Name</span>
-                                <span className="font-bold text-[#247114]">Axis Bank</span>
-                              </div>
-                              <div className="flex justify-between items-center py-0.5">
-                                <span className="text-gray-400 text-[10px] font-bold uppercase">Account No</span>
-                                <span className="font-bold text-gray-950 font-mono select-all">925010059072428</span>
-                              </div>
-                              <div className="flex justify-between items-center py-0.5">
-                                <span className="text-gray-400 text-[10px] font-bold uppercase">IFSC Code</span>
-                                <span className="font-bold text-gray-950 font-mono select-all">UTIB0002952</span>
-                              </div>
-                            </div>
-
-                            <div className="pt-2.5 border-t border-emerald-100 text-[10px] font-bold text-emerald-800 leading-relaxed flex gap-2">
-                              <span className="text-xs mt-0.5">🌿</span>
-                              <span>You will get a copy of these instructions to your email after placing an order.</span>
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={handleBankTransferSubmit}
-                            disabled={isPlacingOrder}
-                            className="w-full py-4 bg-[#247114] hover:bg-[#1b550e] disabled:bg-gray-200 text-white disabled:text-gray-400 rounded-2xl font-bold text-xs tracking-widest uppercase flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-[#247114]/25 active:scale-[0.98] cursor-pointer"
-                          >
-                            {isPlacingOrder ? 'PLACING ORDER...' : 'PLACE ORDER (BANK TRANSFER)'}
-                            <ChevronRight size={14} />
-                          </button>
-                        </div>
-                      )}
-
-                      {!paymentMethod && (
-                        <div className="text-center text-gray-400 text-xs font-bold py-12 border border-dashed border-gray-200 rounded-2xl">
-                          Please select a payment method above to proceed.
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
+                </>
               </div>
             </motion.div>
           </div>
