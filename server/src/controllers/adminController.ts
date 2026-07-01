@@ -124,6 +124,33 @@ export const assignNGO = async (req: Request, res: Response) => {
   }
 };
 
+export const assignCakeVendor = async (req: Request, res: Response) => {
+  try {
+    const { userId, vendorId } = req.body;
+    
+    const user = await User.findOne({ id: userId });
+    const vendor = await Vendor.findOne({ id: vendorId });
+
+    if (!user || !vendor) {
+      return res.status(404).json({ message: "User or Vendor not found" });
+    }
+
+    user.cakeVendor = vendorId;
+    user.cakeStatus = 'Ordered';
+    await user.save();
+
+    await new Activity({
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      msg: `Assigned cake delivery for ${user.name} to ${vendor.name}`,
+      type: 'assign'
+    }).save();
+
+    res.json({ message: "Cake Vendor assigned successfully", user, vendor });
+  } catch (error) {
+    res.status(500).json({ message: "Error assigning Cake Vendor", error });
+  }
+};
+
 export const createNGO = async (req: Request, res: Response) => {
   try {
     const lastNGO = await NGO.findOne().sort({ id: -1 });
