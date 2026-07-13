@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { AdminDashboardLayout } from './layouts/AdminDashboardLayout';
 import { Badge, Icon, StatCard } from '../../shared/components/UI';
-import { fetchUsers, fetchNGOs, fetchActivities, createUser, assignNGO, createNGO, fetchCakeVendors, createCakeVendor, updateCakeStatus, fetchAllSubmissions, createCertificate, fetchCertificates, fetchAllBulkTreeEntries, deleteUser, updateUser, deleteNGO, updateAdminNGO, deleteCakeVendor, updateCakeVendor, fetchAdminSettings, updateAdminSettings, resendWelcomeEmail, fetchStories, createStory, deleteStory, updateStory } from '../../api';
+import { fetchUsers, fetchNGOs, fetchActivities, createUser, assignNGO, createNGO, fetchCakeVendors, createCakeVendor, assignCakeVendor, updateCakeStatus, fetchAllSubmissions, createCertificate, fetchCertificates, fetchAllBulkTreeEntries, deleteUser, updateUser, deleteNGO, updateAdminNGO, deleteCakeVendor, updateCakeVendor, fetchAdminSettings, updateAdminSettings, resendWelcomeEmail, fetchStories, createStory, deleteStory, updateStory } from '../../api';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
@@ -66,6 +66,7 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
   const [showAddStoryModal, setShowAddStoryModal] = useState(false);
   const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
   const [storyFormData, setStoryFormData] = useState({ title: '', content: '', imageUrl: '', linkUrl: '' });
+  const [imageInputType, setImageInputType] = useState<'url' | 'upload'>('url');
   const [ngoFilter, setNgoFilter] = useState("All NGOs");
   const [userSearch, setUserSearch] = useState("");
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -76,8 +77,10 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
   const [showAddNgoModal, setShowAddNgoModal] = useState(false);
   const [showAddVendorModal, setShowAddVendorModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showAssignVendorModal, setShowAssignVendorModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedNgoId, setSelectedNgoId] = useState("");
+  const [selectedVendorId, setSelectedVendorId] = useState("");
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -88,7 +91,7 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
     amount: 1000,
     trees: 1,
     ngo: 'Not Assigned',
-    location: 'Satellite Block A',
+    location: 'Mumbai',
   });
   const [ngoFormData, setNgoFormData] = useState({
     name: '',
@@ -96,11 +99,14 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
     contact: '',
     phone: '',
     email: '',
-    area: 'Central Zone',
+    area: 'Mumbai',
   });
   const [vendorFormData, setVendorFormData] = useState({
-    name: '', email: '', contact: '', phone: '', area: 'Satellite Block A', costPerCake: 500
+    name: '', email: '', contact: '', phone: '', area: 'Mumbai', costPerCake: 500
   });
+  const [customLocation, setCustomLocation] = useState('');
+  const [customNgoArea, setCustomNgoArea] = useState('');
+  const [customVendorArea, setCustomVendorArea] = useState('');
   const [bulkDataPreview, setBulkDataPreview] = useState<any[] | null>(null);
   const [bulkImportStatus, setBulkImportStatus] = useState<any | null>(null);
   const [roleManageTab, setRoleManageTab] = useState<'users' | 'ngos' | 'vendors'>('users');
@@ -235,9 +241,11 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
     e.preventDefault();
     setLoading(true);
     try {
+      const finalLocation = formData.location === 'Other' ? customLocation : formData.location;
       await createUser({
         ...formData,
-        cakeVendor: resolveCakeVendorId(formData.location, cakeVendors),
+        location: finalLocation,
+        cakeVendor: resolveCakeVendorId(finalLocation, cakeVendors),
         cakeStatus: 'Ordered',
       });
       toast.success("Citizen Registered Successfully! ID and Token generated.");
@@ -245,8 +253,9 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
       refreshData();
       setFormData({
         name: '', email: '', phone: '', address: '', dob: '',
-        amount: 1000, trees: 1, ngo: 'Not Assigned', location: 'Satellite Block A',
+        amount: 1000, trees: 1, ngo: 'Not Assigned', location: 'Mumbai',
       });
+      setCustomLocation('');
     } catch (error: any) {
       console.error("Submission Error:", error);
       toast.error(error.message || "Error adding user");
@@ -322,13 +331,18 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
     e.preventDefault();
     setLoading(true);
     try {
-      await createNGO(ngoFormData);
+      const finalArea = ngoFormData.area === 'Other' ? customNgoArea : ngoFormData.area;
+      await createNGO({
+        ...ngoFormData,
+        area: finalArea
+      });
       toast.success("NGO Registered Successfully!");
       setShowAddNgoModal(false);
       refreshData();
       setNgoFormData({
-        name: '', reg: '', contact: '', phone: '', email: '', area: 'Central Zone',
+        name: '', reg: '', contact: '', phone: '', email: '', area: 'Mumbai',
       });
+      setCustomNgoArea('');
     } catch (error: any) {
       console.error("NGO Submission Error:", error);
       toast.error(error.message || "Error adding NGO");
@@ -355,17 +369,41 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
     }
   };
 
+  const handleAssignVendor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser || !selectedVendorId) return;
+    setLoading(true);
+    try {
+      await assignCakeVendor(selectedUser.id, selectedVendorId);
+      toast.success("Cake Vendor assigned successfully!");
+      setShowAssignVendorModal(false);
+      setSelectedUser(null);
+      setSelectedVendorId("");
+      refreshData();
+    } catch (error) {
+      toast.error("Error assigning Cake Vendor");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const handleSubmitVendor = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await createCakeVendor(vendorFormData);
+      const finalArea = vendorFormData.area === 'Other' ? customVendorArea : vendorFormData.area;
+      await createCakeVendor({
+        ...vendorFormData,
+        area: finalArea
+      });
       toast.success("Cake Vendor Registered Successfully!");
       setShowAddVendorModal(false);
       refreshData();
       setVendorFormData({
-        name: '', email: '', contact: '', phone: '', area: 'Satellite Block A', costPerCake: 500
+        name: '', email: '', contact: '', phone: '', area: 'Mumbai', costPerCake: 500
       });
+      setCustomVendorArea('');
 
     } catch (error: any) {
       console.error("Vendor Submission Error:", error);
@@ -1060,7 +1098,15 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                                 {u.cakeStatus || 'Pending'}
                               </span>
                            </td>
-                           <td className="px-6 py-4 text-right">
+                           <td className="px-6 py-4 text-right flex flex-col items-end gap-2">
+                             {u.cakeStatus !== 'Delivered' && (
+                               <button 
+                                 onClick={() => { setSelectedUser(u); setShowAssignVendorModal(true); }}
+                                 className="text-black hover:opacity-75 font-black text-[10px] uppercase tracking-widest flex items-center gap-1 ml-auto group/btn transition-all"
+                               >
+                                 Assign Vendor <Icon name="refresh-cw" size={12} className="group-hover/btn:rotate-180 transition-transform duration-500" />
+                               </button>
+                             )}
                              {u.cakeStatus !== 'Delivered' && (
                                <button 
                                  onClick={() => handleMarkDelivered(u.id)}
@@ -1406,15 +1452,24 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                       <div className="space-y-2">
                         <label className="text-xs font-semibold text-zinc-600 mb-1.5 block">Plantation Zone</label>
                         <select className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-black focus:bg-white focus:border-black outline-none transition-all shadow-inner" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})}>
-                          <option>Satellite Block A</option>
-                          <option>Satellite Block B</option>
-                          <option>Narmada Zone</option>
-                          <option>Satpura Zone</option>
-                          <option>Malwa Zone</option>
-                          <option>Central Zone</option>
+                          <option>Mumbai</option>
+                          <option>Pune</option>
+                          <option>Hyderabad</option>
+                          <option>Delhi</option>
+                          <option>Bangalore</option>
+                          <option>Chennai</option>
+                          <option>Kolkata</option>
+                          <option value="Other">Other</option>
                         </select>
                       </div>
                     </div>
+
+                    {formData.location === 'Other' && (
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold text-zinc-600 mb-1.5 block">Specify City</label>
+                        <input required className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-black focus:bg-white focus:border-black outline-none transition-all shadow-inner" placeholder="Enter city name..." value={customLocation} onChange={e => setCustomLocation(e.target.value)} />
+                      </div>
+                    )}
 
                     <button type="submit" disabled={loading} className="w-full bg-black text-white py-5 rounded-[20px] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-gray-900 transition-all shadow-2xl disabled:opacity-50 mt-4 border border-white/10">
                       {loading ? 'Processing Transaction...' : 'Establish Citizen Record'}
@@ -1452,17 +1507,33 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                   <input required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all" value={ngoFormData.reg} onChange={e => setNgoFormData({...ngoFormData, reg: e.target.value})} />
                 </div>
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black p-1 text-gray-400 uppercase tracking-widest">Operating Area</label>
-                <select className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all" value={ngoFormData.area} onChange={e => setNgoFormData({...ngoFormData, area: e.target.value})}>
-                  <option>Satellite Block A</option>
-                  <option>Satellite Block B</option>
-                  <option>Narmada Zone</option>
-                  <option>Satpura Zone</option>
-                  <option>Malwa Zone</option>
-                  <option>Central Zone</option>
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black p-1 text-gray-400 uppercase tracking-widest">Operating Area</label>
+                  <select className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all" value={ngoFormData.area} onChange={e => setNgoFormData({...ngoFormData, area: e.target.value})}>
+                    <option>Mumbai</option>
+                    <option>Pune</option>
+                    <option>Hyderabad</option>
+                    <option>Delhi</option>
+                    <option>Bangalore</option>
+                    <option>Chennai</option>
+                    <option>Kolkata</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black p-1 text-gray-400 uppercase tracking-widest">Contact Person</label>
+                  <input required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all" value={ngoFormData.contact} onChange={e => setNgoFormData({...ngoFormData, contact: e.target.value})} />
+                </div>
               </div>
+
+              {ngoFormData.area === 'Other' && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black p-1 text-gray-400 uppercase tracking-widest">Specify City</label>
+                  <input required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all" placeholder="Enter city name..." value={customNgoArea} onChange={e => setCustomNgoArea(e.target.value)} />
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black p-1 text-gray-400 uppercase tracking-widest">Primary Email</label>
@@ -1500,13 +1571,31 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black p-1 text-gray-400 uppercase tracking-widest">Service Area</label>
                   <select className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all" value={vendorFormData.area} onChange={e => setVendorFormData({...vendorFormData, area: e.target.value})}>
-                    <option>Satellite Block A</option>
-                    <option>Satellite Block B</option>
-                    <option>Narmada Zone</option>
-                    <option>Satpura Zone</option>
-                    <option>Malwa Zone</option>
-                    <option>Central Zone</option>
+                    <option>Mumbai</option>
+                    <option>Pune</option>
+                    <option>Hyderabad</option>
+                    <option>Delhi</option>
+                    <option>Bangalore</option>
+                    <option>Chennai</option>
+                    <option>Kolkata</option>
+                    <option value="Other">Other</option>
                   </select>
+                </div>
+              </div>
+              {vendorFormData.area === 'Other' && (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black p-1 text-gray-400 uppercase tracking-widest">Specify City</label>
+                  <input required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all" placeholder="Enter city name..." value={customVendorArea} onChange={e => setCustomVendorArea(e.target.value)} />
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black p-1 text-gray-400 uppercase tracking-widest">Email Address</label>
+                  <input required type="email" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all" value={vendorFormData.email} onChange={e => setVendorFormData({...vendorFormData, email: e.target.value})} />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black p-1 text-gray-400 uppercase tracking-widest">Contact Person</label>
+                  <input required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all" value={vendorFormData.contact} onChange={e => setVendorFormData({...vendorFormData, contact: e.target.value})} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -1573,6 +1662,48 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
 
               <button type="submit" disabled={loading || !selectedNgoId} className="w-full bg-black text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-gray-900 transition-all shadow-xl disabled:opacity-50">
                 {loading ? 'Processing...' : 'Confirm Assignment'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showAssignVendorModal && selectedUser && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-lg font-bold text-zinc-900 uppercase tracking-tight">Assign Cake Vendor</h3>
+              <button onClick={() => { setShowAssignVendorModal(false); setSelectedUser(null); }} className="p-2 hover:bg-white rounded-xl text-gray-400 hover:text-rose-500 transition-colors">
+                <Icon name="x" size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleAssignVendor} className="p-6 space-y-6">
+              <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                <p className="text-xs font-semibold text-zinc-500 tracking-wide mb-1">Citizen Details</p>
+                <p className="text-sm font-semibold text-zinc-900">{selectedUser.name}</p>
+                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1">Delivery Location: {selectedUser.location}</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black p-1 text-gray-400 uppercase tracking-widest">Select Vendor (Nearest by Area)</label>
+                <select 
+                  required 
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all"
+                  value={selectedVendorId} 
+                  onChange={e => setSelectedVendorId(e.target.value)}
+                >
+                  <option value="">Select a Vendor...</option>
+                  {cakeVendors.map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.name} ({v.area}) - ₹{v.costPerCake}/cake
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-gray-900 transition-all shadow-xl disabled:opacity-50 mt-4">
+                {loading ? 'Processing...' : 'Confirm Vendor Assignment'}
               </button>
             </form>
           </div>
@@ -2144,7 +2275,14 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
             {stories.map(story => (
               <div key={story._id} className="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm flex flex-col gap-4 relative overflow-hidden group">
                 {story.imageUrl ? (
-                  <img src={story.imageUrl} alt={story.title} className="w-full h-48 object-cover rounded-xl bg-gray-100" />
+                  <img src={(() => {
+                    const url = story.imageUrl;
+                    const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+                    if (driveMatch && driveMatch[1]) return `https://drive.google.com/uc?id=${driveMatch[1]}`;
+                    const driveIdMatch = url.match(/id=([a-zA-Z0-9-_]+)/);
+                    if (url.includes('drive.google.com') && driveIdMatch && driveIdMatch[1]) return `https://drive.google.com/uc?id=${driveIdMatch[1]}`;
+                    return url;
+                  })()} alt={story.title} className="w-full h-48 object-cover rounded-xl bg-gray-100" />
                 ) : (
                   <div className="w-full h-48 bg-gray-50 border border-dashed border-gray-200 rounded-xl flex items-center justify-center">
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">No Image Provided</span>
@@ -2164,6 +2302,7 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                         imageUrl: story.imageUrl || '',
                         linkUrl: story.linkUrl || ''
                       });
+                      setImageInputType((story.imageUrl && story.imageUrl.startsWith('data:image')) ? 'upload' : 'url');
                       setEditingStoryId(story._id);
                       setShowAddStoryModal(true);
                     }}
@@ -2210,6 +2349,7 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                     setShowAddStoryModal(false);
                     setEditingStoryId(null);
                     setStoryFormData({ title: '', content: '', imageUrl: '', linkUrl: '' });
+                    setImageInputType('url');
                   }} className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-black transition-all shadow-sm">
                     <Icon name="x" size={16} />
                   </button>
@@ -2230,6 +2370,7 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                       setShowAddStoryModal(false);
                       setEditingStoryId(null);
                       setStoryFormData({ title: '', content: '', imageUrl: '', linkUrl: '' });
+                      setImageInputType('url');
                       refreshData();
                     } catch(err) {
                       toast.error(editingStoryId ? 'Failed to update story' : 'Failed to create story');
@@ -2241,7 +2382,60 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                   <div className="space-y-4">
                     <input required type="text" placeholder="Story Title" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold focus:bg-white focus:border-black outline-none transition-all" value={storyFormData.title} onChange={e => setStoryFormData({...storyFormData, title: e.target.value})} />
                     <textarea required placeholder="Story Content / Description" rows={4} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:bg-white focus:border-black outline-none transition-all resize-none" value={storyFormData.content} onChange={e => setStoryFormData({...storyFormData, content: e.target.value})} />
-                    <input required type="url" placeholder="Image URL (e.g., https://unsplash.com/...)" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:bg-white focus:border-black outline-none transition-all" value={storyFormData.imageUrl} onChange={e => setStoryFormData({...storyFormData, imageUrl: e.target.value})} />
+                    
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
+                      <div className="flex gap-6">
+                        <label className="flex items-center gap-2 text-sm font-bold text-gray-700 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="imageInputType" 
+                            checked={imageInputType === 'url'} 
+                            onChange={() => {
+                              setImageInputType('url');
+                              setStoryFormData({...storyFormData, imageUrl: ''});
+                            }} 
+                            className="accent-black"
+                          />
+                          Use Image URL
+                        </label>
+                        <label className="flex items-center gap-2 text-sm font-bold text-gray-700 cursor-pointer">
+                          <input 
+                            type="radio" 
+                            name="imageInputType" 
+                            checked={imageInputType === 'upload'} 
+                            onChange={() => {
+                              setImageInputType('upload');
+                              setStoryFormData({...storyFormData, imageUrl: ''});
+                            }} 
+                            className="accent-black"
+                          />
+                          Upload to Mongo
+                        </label>
+                      </div>
+
+                      {imageInputType === 'url' ? (
+                        <input required type="url" placeholder="Image URL (e.g., https://unsplash.com/... or https://drive.google.com/...)" className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm font-medium focus:border-black outline-none transition-all" value={storyFormData.imageUrl} onChange={e => setStoryFormData({...storyFormData, imageUrl: e.target.value})} />
+                      ) : (
+                        <div className="space-y-2">
+                          <input required={!storyFormData.imageUrl} type="file" accept="image/*" className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm font-medium focus:border-black outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-black hover:file:bg-gray-200 cursor-pointer" onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setStoryFormData({...storyFormData, imageUrl: reader.result as string});
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }} />
+                          {storyFormData.imageUrl && storyFormData.imageUrl.startsWith('data:image') && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">✓ Image Data Prepared for Upload</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
                     <input type="url" placeholder="Link URL (Optional link for 'Read More')" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium focus:bg-white focus:border-black outline-none transition-all" value={storyFormData.linkUrl} onChange={e => setStoryFormData({...storyFormData, linkUrl: e.target.value})} />
                   </div>
                   <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gray-900 transition-all shadow-xl disabled:opacity-50">

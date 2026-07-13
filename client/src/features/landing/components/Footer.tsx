@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { subscribeNewsletter } from '../../../api';
+import { Facebook, Youtube, Instagram, Linkedin } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -63,7 +64,13 @@ export const Footer: React.FC = () => {
             <h4 className="text-lg font-bold text-white">
               Community
             </h4>
-            <form onSubmit={handleSubscribe} className="space-y-4">
+            <div className="flex items-center gap-4 text-white/80">
+              <a href="https://www.facebook.com/profile.php?id=61572164207632" target="_blank" rel="noreferrer" className="hover:text-[#247114] transition-colors"><Facebook size={24} /></a>
+              <a href="https://www.youtube.com/@forestgift_india" target="_blank" rel="noreferrer" className="hover:text-[#247114] transition-colors"><Youtube size={24} /></a>
+              <a href="https://www.instagram.com/forestgift_india/" target="_blank" rel="noreferrer" className="hover:text-[#247114] transition-colors"><Instagram size={24} /></a>
+              <a href="https://www.linkedin.com/company/forestgift/" target="_blank" rel="noreferrer" className="hover:text-[#247114] transition-colors"><Linkedin size={24} /></a>
+            </div>
+            <form onSubmit={handleSubscribe} className="space-y-4 pt-4">
               <div className="space-y-2">
                 <p className="text-base font-medium text-white/80">
                   Enter your email address

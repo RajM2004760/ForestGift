@@ -65,6 +65,19 @@ export const assignNGO = async (userId: string, ngoId: string) => {
   return res.json();
 };
 
+export const assignCakeVendor = async (userId: string, vendorId: string) => {
+  const res = await fetch(`${API_URL}/admin/assign-vendor`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, vendorId }),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || 'Failed to assign Cake Vendor');
+  }
+  return res.json();
+};
+
 export const createNGO = async (ngoData: any) => {
   const res = await fetch(`${API_URL}/admin/ngos`, {
     method: 'POST',

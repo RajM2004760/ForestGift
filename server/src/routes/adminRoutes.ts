@@ -1,10 +1,11 @@
 import express from 'express';
-import { getAdminOverview, createUser, assignNGO, createNGO, deleteUser, updateUser, deleteNGO, updateNGOProfile, deleteVendor, updateVendor, getSettings, updateSettings, resendWelcomeEmailController } from '../controllers/adminController';
+import { getAdminOverview, createUser, assignNGO, createNGO, deleteUser, updateUser, deleteNGO, updateNGOProfile, deleteVendor, updateVendor, getSettings, updateSettings, resendWelcomeEmailController, assignCakeVendor } from '../controllers/adminController';
 const router = express.Router();
 router.get('/overview', getAdminOverview);
 router.post('/users', createUser);
 router.post('/resend-welcome-email', resendWelcomeEmailController);
 router.post('/assign-ngo', assignNGO);
+router.post('/assign-vendor', assignCakeVendor);
 router.post('/ngos', createNGO);
 
 router.delete('/users/:id', deleteUser);
