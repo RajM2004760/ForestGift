@@ -62,9 +62,15 @@ router.post('/verify', async (req, res) => {
       
       if (!user) {
         // Create new user if not found
-        const userCount = await User.countDocuments();
-        const newUserId = `USR${(userCount + 1).toString().padStart(3, '0')}`;
-        const newToken = `TKN-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        const lastUser = await User.findOne().sort({ id: -1 });
+        let nextIdNum = 1;
+        if (lastUser && lastUser.id) {
+          const match = lastUser.id.match(/\d+/);
+          if (match) nextIdNum = parseInt(match[0], 10) + 1;
+        }
+        
+        const newUserId = `USR${nextIdNum.toString().padStart(3, '0')}`;
+        const newToken = `TKN-${new Date().getFullYear()}-${nextIdNum.toString().padStart(4, '0')}`;
         
         user = new User({
           id: newUserId,
