@@ -23,15 +23,32 @@ app.use(cors());
 app.use(express.json({ limit: '20mb' }));
 app.use('/uploads', express.static('uploads'));
 
-// MongoDB Connection
-console.log('⏳ Connecting to MongoDB...');
-const MONGODB_URI = process.env.MONGODB_URI || '';
-mongoose.connect(MONGODB_URI)
-  .then(() => {
-    console.log('✅ Connected to MongoDB Atlas');
-    console.log('🚀 Server logic initialized');
-  })
-  .catch(err => console.error('❌ MongoDB Connection Error:', err));
+// MongoDB Connection Middleware
+let isConnected = false;
+
+app.use(async (req, res, next) => {
+  if (!isConnected) {
+    console.log('⏳ Connecting to MongoDB...');
+    try {
+      const MONGODB_URI = process.env.MONGODB_URI || '';
+      if (!MONGODB_URI) {
+        throw new Error("MONGODB_URI is missing or empty.");
+      }
+      await mongoose.connect(MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000,
+      });
+      isConnected = true;
+      console.log('✅ Connected to MongoDB Atlas');
+    } catch (err) {
+      console.error('❌ MongoDB Connection Error:', err);
+      return res.status(500).json({ 
+        message: "Database Connection Failed", 
+        error: err instanceof Error ? err.message : String(err) 
+      });
+    }
+  }
+  next();
+});
 
 // Routes
 app.use('/api', apiRoutes);
