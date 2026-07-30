@@ -395,8 +395,10 @@ export const verifyRazorpayPayment = async (data: any) => {
     body: JSON.stringify(data),
   });
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.message || 'Payment verification failed on server');
+    const errObj = await res.json().catch(() => ({}));
+    const backendErrorMsg = errObj.error || errObj.message || 'Payment verification failed on server';
+    const stack = errObj.stack ? `\nStack: ${errObj.stack}` : '';
+    throw new Error(`${backendErrorMsg}${stack}`);
   }
   return res.json();
 };

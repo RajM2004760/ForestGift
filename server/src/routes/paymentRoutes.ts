@@ -181,7 +181,11 @@ router.post('/verify', async (req, res) => {
     }
   } catch (error: any) {
     console.error('Error verifying payment:', error);
-    res.status(500).json({ message: 'Error during verification', error: error.message });
+    res.status(500).json({ 
+      message: 'Error during verification', 
+      error: error.message,
+      stack: error.stack 
+    });
   }
 });
 
