@@ -38,8 +38,7 @@ export const createUser = async (req: Request, res: Response) => {
     const location = req.body.location as string | undefined;
     let cakeVendor = req.body.cakeVendor as string | undefined;
     if (!cakeVendor || cakeVendor === 'Unassigned') {
-      const vendorDoc = location ? await Vendor.findOne({ area: location }) : null;
-      cakeVendor = vendorDoc?.id ?? 'Unassigned';
+      cakeVendor = 'Unassigned';
     }
     const cakeStatus = req.body.cakeStatus ?? 'Ordered';
 

@@ -49,7 +49,7 @@ const getDisplayedCakeVendor = (u: any, vendorList: any[]) => {
     const match = vendorList.find((v) => v.id === id);
     if (match) return { name: match.name, costPerCake: match.costPerCake };
   }
-  return getCakeVendor(u.location || 'Satellite Block A', vendorList);
+  return { name: 'Unassigned', costPerCake: 0 };
 };
 
 
@@ -1090,8 +1090,12 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                            </td>
                            <td className="px-6 py-4 text-[11px] font-black text-gray-500 uppercase tracking-widest italic">{u.location || 'Satellite Area'}</td>
                            <td className="px-6 py-4">
-                             <div className="font-semibold text-zinc-900 uppercase text-xs">{v.name}</div>
-                             <div className="text-[10px] text-zinc-500 font-semibold tracking-wide">₹{v.costPerCake} Unit Cost</div>
+                             <div className="font-semibold text-zinc-900 uppercase text-xs">
+                               {v.name === 'Unassigned' ? <span className="text-gray-400 italic">Not Assigned</span> : v.name}
+                             </div>
+                             {v.name !== 'Unassigned' && (
+                               <div className="text-[10px] text-zinc-500 font-semibold tracking-wide">₹{v.costPerCake} Unit Cost</div>
+                             )}
                            </td>
                            <td className="px-6 py-4">
                               <span className={`px-3 py-1.5 rounded-xl text-xs font-semibold text-zinc-500 tracking-wide border ${u.cakeStatus === 'Delivered' ? 'bg-zinc-100 text-black border-zinc-200' : 'bg-zinc-50 text-zinc-400 border-zinc-200'}`}>
@@ -1104,10 +1108,10 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                                  onClick={() => { setSelectedUser(u); setShowAssignVendorModal(true); }}
                                  className="text-black hover:opacity-75 font-black text-[10px] uppercase tracking-widest flex items-center gap-1 ml-auto group/btn transition-all"
                                >
-                                 Assign Vendor <Icon name="refresh-cw" size={12} className="group-hover/btn:rotate-180 transition-transform duration-500" />
+                                 {v.name === 'Unassigned' ? 'Assign Vendor' : 'Change Vendor'} <Icon name="refresh-cw" size={12} className="group-hover/btn:rotate-180 transition-transform duration-500" />
                                </button>
                              )}
-                             {u.cakeStatus !== 'Delivered' && (
+                             {u.cakeStatus !== 'Delivered' && v.name !== 'Unassigned' && (
                                <button 
                                  onClick={() => handleMarkDelivered(u.id)}
                                  className="text-black hover:opacity-75 font-black text-[10px] uppercase tracking-widest flex items-center gap-1 ml-auto group/btn transition-all"
