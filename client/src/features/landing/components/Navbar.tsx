@@ -84,7 +84,7 @@ export const Navbar: React.FC<NavigationProps> = ({
 
         {/* Hamburger/Login */}
         <div className="ml-auto flex items-center">
-          {/* {isAuthenticated ? (
+          {isAuthenticated ? (
             <div className="hidden lg:flex items-center gap-4">
               <button 
                 onClick={onDashboardClick}
@@ -106,7 +106,7 @@ export const Navbar: React.FC<NavigationProps> = ({
             >
               MY FOREST
             </button>
-          )} */}
+          )}
           
           {/* Hamburger Icon for Mobile */}
           <button 
@@ -158,7 +158,7 @@ export const Navbar: React.FC<NavigationProps> = ({
               </div>
             </div>
 
-            {/* {isAuthenticated ? (
+            {isAuthenticated ? (
               <div className="flex flex-col gap-4 mt-8">
                 <button 
                   onClick={() => { onDashboardClick?.(); setIsMenuOpen(false); }}
@@ -180,7 +180,7 @@ export const Navbar: React.FC<NavigationProps> = ({
               >
                 MY FOREST
               </button>
-            )} */}
+            )}
           </div>
         </div>
       )}

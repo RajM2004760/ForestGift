@@ -230,7 +230,7 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
           <PlanCard
             trees="1"
             label="CHILD"
-            price="1,000"
+            price="1"
             tagline="Perfect for young pioneers beginning their lifelong green journey."
             features={[
               "1 Tree Planted",
@@ -242,13 +242,13 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
             badge="FRESH START"
             image="/plans/plan_1_tree.png"
             delay={0.1}
-            onPay={() => handlePlanClick(1000, 'CHILD')}
+            onPay={() => handlePlanClick(1, 'CHILD')}
             isProcessing={processingId === 'CHILD'}
           />
           <PlanCard
             trees="5"
             label="YOUTH"
-            price="5,000"
+            price="5"
             tagline="For active change-makers establishing a robust ecological impact."
             features={[
               "5 Trees Planted",
@@ -260,13 +260,13 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
             badge="MOST POPULAR"
             image="/plans/plan_5_trees.png"
             delay={0.2}
-            onPay={() => handlePlanClick(5000, 'YOUTH')}
+            onPay={() => handlePlanClick(5, 'YOUTH')}
             isProcessing={processingId === 'YOUTH'}
           />
           <PlanCard
             trees="10"
             label="ELDER"
-            price="10,000"
+            price="10"
             tagline="A noble, heavy-impact legacy seeding a high-biodiversity micro-forest."
             features={[
               "10 Trees Planted",
@@ -278,7 +278,7 @@ export const Plans: React.FC<{ showHeader?: boolean; onPlantClick?: () => void }
             badge="LEADER IMPACT"
             image="/plans/plan_10_trees.png"
             delay={0.3}
-            onPay={() => handlePlanClick(10000, 'ELDER')}
+            onPay={() => handlePlanClick(10, 'ELDER')}
             isProcessing={processingId === 'ELDER'}
           />
         </div>
