@@ -1106,17 +1106,17 @@ export const AdminDashboard = ({ handleLogout }: { handleLogout?: () => void }) 
                              {u.cakeStatus !== 'Delivered' && (
                                <button 
                                  onClick={() => { setSelectedUser(u); setShowAssignVendorModal(true); }}
-                                 className="text-black hover:opacity-75 font-black text-[10px] uppercase tracking-widest flex items-center gap-1 ml-auto group/btn transition-all"
+                                 className="bg-black text-white hover:bg-gray-800 font-bold text-[10px] px-3 py-1.5 rounded-lg uppercase tracking-widest flex items-center gap-1 transition-all shadow-sm"
                                >
-                                 {v.name === 'Unassigned' ? 'Assign Vendor' : 'Change Vendor'} <Icon name="refresh-cw" size={12} className="group-hover/btn:rotate-180 transition-transform duration-500" />
+                                 {v.name === 'Unassigned' ? 'Assign Vendor' : 'Change Vendor'} <Icon name="refresh-cw" size={12} className="ml-1" />
                                </button>
                              )}
                              {u.cakeStatus !== 'Delivered' && v.name !== 'Unassigned' && (
                                <button 
                                  onClick={() => handleMarkDelivered(u.id)}
-                                 className="text-black hover:opacity-75 font-black text-[10px] uppercase tracking-widest flex items-center gap-1 ml-auto group/btn transition-all"
+                                 className="bg-emerald-600 text-white hover:bg-emerald-700 font-bold text-[10px] px-3 py-1.5 rounded-lg uppercase tracking-widest flex items-center gap-1 transition-all shadow-sm"
                                >
-                                 Mark Delivered <Icon name="check" size={12} className="group-hover/btn:scale-125 transition-transform" />
+                                 Mark Delivered <Icon name="check" size={12} className="ml-1" />
                                </button>
                              )}
                            </td>
