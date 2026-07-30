@@ -394,6 +394,10 @@ export const verifyRazorpayPayment = async (data: any) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || 'Payment verification failed on server');
+  }
   return res.json();
 };
 
